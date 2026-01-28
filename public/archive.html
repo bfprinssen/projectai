@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archived Events - SociaalAI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <!-- Navigation -->
+  <nav class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-blue-600">SociaalAI</h1>
+      <div class="flex gap-4">
+        <a href="/" class="text-gray-700 hover:text-blue-600 transition">Events</a>
+        <a href="/archive" class="text-gray-700 hover:text-blue-600 transition">Archive</a>
+        <a href="/login" id="loginBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+          Admin Login
+        </a>
+        <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition hidden">
+          Logout
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mx-auto px-4 py-8">
+    <h2 class="text-3xl font-bold mb-8 text-gray-800">Archived Events</h2>
+    <div id="archivedEventsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="text-center py-8 text-gray-500">Loading archived events...</div>
+    </div>
+  </div>
+
+  <footer class="bg-gray-800 text-white mt-12 py-8">
+    <div class="container mx-auto px-4 text-center">
+      <p>&copy; 2024 SociaalAI Event Management. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    async function loadArchivedEvents() {
+      try {
+        const response = await fetch('/api/events/archived');
+        const events = await response.json();
+        const container = document.getElementById('archivedEventsContainer');
+        
+        if (events.length === 0) {
+          container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">No archived events</div>';
+          return;
+        }
+
+        container.innerHTML = events.map(event => `
+          <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+            ${event.imageUrl ? `
+              <img src="${event.imageUrl}" alt="${event.title}" 
+                   class="w-full h-48 object-cover" loading="lazy" decoding="async">
+            ` : ''}
+            <div class="p-4">
+              <h3 class="text-xl font-bold text-gray-800 mb-2">${event.title}</h3>
+              <p class="text-gray-600 mb-2">${event.description || ''}</p>
+              <p class="text-sm text-gray-500 mb-1">📅 ${new Date(event.date).toLocaleDateString()}</p>
+              ${event.location ? `<p class="text-sm text-gray-500">📍 ${event.location}</p>` : ''}
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading archived events:', error);
+      }
+    }
+
+    async function checkAuth() {
+      try {
+        const response = await fetch('/api/auth/check');
+        const data = await response.json();
+        
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        
+        if (data.authenticated) {
+          loginBtn.classList.add('hidden');
+          logoutBtn.classList.remove('hidden');
+        } else {
+          loginBtn.classList.remove('hidden');
+          logoutBtn.classList.add('hidden');
+        }
+      } catch (error) {
+        console.error('Error checking auth:', error);
+      }
+    }
+
+    document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/';
+      } catch (error) {
+        console.error('Error logging out:', error);
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadArchivedEvents();
+      checkAuth();
+    });
+  </script>
+</body>
+</html>

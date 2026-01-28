@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - SociaalAI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Accessibility improvements */
+    input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 50;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal.active {
+      display: block;
+    }
+    .modal-content {
+      background-color: white;
+      margin: 5% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .tab {
+      display: none;
+    }
+    .tab.active {
+      display: block;
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <!-- Navigation -->
+  <nav class="bg-white shadow-md sticky top-0 z-40">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-blue-600">SociaalAI Admin</h1>
+      <div class="flex gap-4">
+        <span id="username" class="text-gray-700">Loading...</span>
+        <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">
+          Logout
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mx-auto px-4 py-8">
+    <!-- Tab Navigation -->
+    <div class="bg-white rounded-lg shadow-md mb-6 flex flex-wrap border-b">
+      <button class="tab-btn active px-6 py-3 border-b-2 border-blue-600 font-semibold text-blue-600" data-tab="events">
+        Events
+      </button>
+      <button class="tab-btn px-6 py-3 border-b-2 border-transparent font-semibold text-gray-600 hover:text-gray-900" data-tab="content">
+        Content Blocks
+      </button>
+      <button class="tab-btn px-6 py-3 border-b-2 border-transparent font-semibold text-gray-600 hover:text-gray-900" data-tab="logs">
+        Audit Logs
+      </button>
+    </div>
+
+    <!-- Events Tab -->
+    <div id="events" class="tab active space-y-6">
+      <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold text-gray-800">Events Management</h2>
+        <button id="createEventBtn" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">
+          ➕ Create Event
+        </button>
+      </div>
+      <div id="eventsContainer" class="grid gap-4"></div>
+    </div>
+
+    <!-- Content Blocks Tab -->
+    <div id="content" class="tab space-y-6">
+      <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold text-gray-800">Content Blocks</h2>
+        <button id="createContentBtn" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">
+          ➕ Add Block
+        </button>
+      </div>
+      <div id="contentContainer" class="grid gap-4"></div>
+    </div>
+
+    <!-- Audit Logs Tab -->
+    <div id="logs" class="tab space-y-6">
+      <h2 class="text-2xl font-bold text-gray-800">Audit Logs</h2>
+      <div id="logsContainer" class="bg-white rounded-lg shadow-md p-6"></div>
+    </div>
+  </div>
+
+  <!-- Event Modal -->
+  <div id="eventModal" class="modal" role="dialog" aria-labelledby="eventModalTitle">
+    <div class="modal-content">
+      <h3 id="eventModalTitle" class="text-xl font-bold mb-4">Create/Edit Event</h3>
+      <form id="eventForm" class="space-y-4">
+        <input type="hidden" id="eventId">
+        
+        <div>
+          <label for="eventTitle" class="block text-sm font-medium mb-1">Title *</label>
+          <input type="text" id="eventTitle" required class="w-full px-3 py-2 border rounded">
+        </div>
+        
+        <div>
+          <label for="eventDate" class="block text-sm font-medium mb-1">Date *</label>
+          <input type="datetime-local" id="eventDate" required class="w-full px-3 py-2 border rounded">
+        </div>
+        
+        <div>
+          <label for="eventLocation" class="block text-sm font-medium mb-1">Location</label>
+          <input type="text" id="eventLocation" class="w-full px-3 py-2 border rounded">
+        </div>
+        
+        <div>
+          <label for="eventDescription" class="block text-sm font-medium mb-1">Description</label>
+          <textarea id="eventDescription" rows="4" class="w-full px-3 py-2 border rounded"></textarea>
+        </div>
+        
+        <div>
+          <label for="eventImageUrl" class="block text-sm font-medium mb-1">Image URL</label>
+          <input type="url" id="eventImageUrl" class="w-full px-3 py-2 border rounded">
+        </div>
+        
+        <div class="flex gap-3">
+          <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+            Save Event
+          </button>
+          <button type="button" onclick="closeEventModal()" class="bg-gray-400 text-white px-6 py-2 rounded hover:bg-gray-500">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Content Block Modal -->
+  <div id="contentModal" class="modal" role="dialog" aria-labelledby="contentModalTitle">
+    <div class="modal-content">
+      <h3 id="contentModalTitle" class="text-xl font-bold mb-4">Create/Edit Content Block</h3>
+      <form id="contentForm" class="space-y-4">
+        <input type="hidden" id="contentId">
+        
+        <div>
+          <label for="contentPage" class="block text-sm font-medium mb-1">Page *</label>
+          <input type="text" id="contentPage" value="home" required class="w-full px-3 py-2 border rounded">
+        </div>
+        
+        <div>
+          <label for="contentText" class="block text-sm font-medium mb-1">Text *</label>
+          <textarea id="contentText" rows="4" required class="w-full px-3 py-2 border rounded"></textarea>
+        </div>
+        
+        <div>
+          <label for="contentImageUrl" class="block text-sm font-medium mb-1">Image URL</label>
+          <input type="url" id="contentImageUrl" class="w-full px-3 py-2 border rounded">
+        </div>
+        
+        <div>
+          <label for="contentAltText" class="block text-sm font-medium mb-1">Image Alt Text</label>
+          <input type="text" id="contentAltText" class="w-full px-3 py-2 border rounded">
+        </div>
+        
+        <div>
+          <label for="contentPosition" class="block text-sm font-medium mb-1">Position</label>
+          <input type="number" id="contentPosition" value="0" class="w-full px-3 py-2 border rounded">
+        </div>
+        
+        <div class="flex gap-3">
+          <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+            Save Block
+          </button>
+          <button type="button" onclick="closeContentModal()" class="bg-gray-400 text-white px-6 py-2 rounded hover:bg-gray-500">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api';
+    let currentTab = 'events';
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        switchTab(tab);
+      });
+    });
+
+    function switchTab(tabName) {
+      currentTab = tabName;
+      
+      // Hide all tabs
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Remove active from all buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-blue-600', 'text-blue-600');
+        btn.classList.add('border-transparent', 'text-gray-600');
+      });
+      
+      // Show selected tab
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('border-blue-600', 'text-blue-600');
+      event.target.classList.remove('border-transparent', 'text-gray-600');
+      
+      // Load data
+      if (tabName === 'events') loadEvents();
+      if (tabName === 'content') loadContentBlocks();
+      if (tabName === 'logs') loadAuditLogs();
+    }
+
+    // Auth Check
+    async function checkAuth() {
+      try {
+        const response = await fetch(`${API_BASE}/auth/check`);
+        const data = await response.json();
+        
+        if (!data.authenticated) {
+          window.location.href = '/login';
+        } else {
+          document.getElementById('username').textContent = data.username;
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+      }
+    }
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try {
+        await fetch(`${API_BASE}/auth/logout`, { method: 'POST' });
+        window.location.href = '/';
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+    });
+
+    // Events
+    async function loadEvents() {
+      try {
+        const response = await fetch(`${API_BASE}/events`);
+        const events = await response.json();
+        const container = document.getElementById('eventsContainer');
+        
+        container.innerHTML = events.map(event => `
+          <div class="bg-white rounded-lg shadow-md p-4 flex justify-between items-start">
+            <div class="flex-1">
+              <h3 class="text-lg font-bold text-gray-800">${event.title}</h3>
+              <p class="text-gray-600">📅 ${new Date(event.date).toLocaleString()}</p>
+              ${event.location ? `<p class="text-gray-600">📍 ${event.location}</p>` : ''}
+              <p class="text-sm text-gray-500 mt-2">Created: ${new Date(event.created_at).toLocaleDateString()}</p>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="editEvent('${event.id}')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">
+                Edit
+              </button>
+              <button onclick="archiveEvent('${event.id}')" class="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600">
+                Archive
+              </button>
+              <button onclick="deleteEvent('${event.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
+                Delete
+              </button>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading events:', error);
+      }
+    }
+
+    document.getElementById('createEventBtn').addEventListener('click', () => {
+      document.getElementById('eventForm').reset();
+      document.getElementById('eventId').value = '';
+      document.getElementById('eventModalTitle').textContent = 'Create Event';
+      document.getElementById('eventModal').classList.add('active');
+    });
+
+    document.getElementById('eventForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const id = document.getElementById('eventId').value;
+      const eventData = {
+        title: document.getElementById('eventTitle').value,
+        date: new Date(document.getElementById('eventDate').value).toISOString(),
+        location: document.getElementById('eventLocation').value,
+        description: document.getElementById('eventDescription').value,
+        imageUrl: document.getElementById('eventImageUrl').value
+      };
+
+      try {
+        const url = id ? `${API_BASE}/events/${id}` : `${API_BASE}/events`;
+        const method = id ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(eventData)
+        });
+
+        if (response.ok) {
+          closeEventModal();
+          loadEvents();
+        } else {
+          alert('Error saving event');
+        }
+      } catch (error) {
+        console.error('Error saving event:', error);
+        alert('Error saving event');
+      }
+    });
+
+    async function editEvent(id) {
+      try {
+        const response = await fetch(`${API_BASE}/events/${id}`);
+        const event = await response.json();
+        
+        document.getElementById('eventId').value = event.id;
+        document.getElementById('eventTitle').value = event.title;
+        document.getElementById('eventDate').value = new Date(event.date).toISOString().slice(0, 16);
+        document.getElementById('eventLocation').value = event.location || '';
+        document.getElementById('eventDescription').value = event.description || '';
+        document.getElementById('eventImageUrl').value = event.imageUrl || '';
+        
+        document.getElementById('eventModalTitle').textContent = 'Edit Event';
+        document.getElementById('eventModal').classList.add('active');
+      } catch (error) {
+        console.error('Error loading event:', error);
+        alert('Error loading event');
+      }
+    }
+
+    function closeEventModal() {
+      document.getElementById('eventModal').classList.remove('active');
+    }
+
+    async function deleteEvent(id) {
+      if (!confirm('Delete this event?')) return;
+      
+      try {
+        const response = await fetch(`${API_BASE}/events/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+          loadEvents();
+        } else {
+          alert('Error deleting event');
+        }
+      } catch (error) {
+        console.error('Error deleting event:', error);
+        alert('Error deleting event');
+      }
+    }
+
+    async function archiveEvent(id) {
+      try {
+        const response = await fetch(`${API_BASE}/events/${id}/archive`, { method: 'POST' });
+        if (response.ok) {
+          loadEvents();
+        } else {
+          alert('Error archiving event');
+        }
+      } catch (error) {
+        console.error('Error archiving event:', error);
+        alert('Error archiving event');
+      }
+    }
+
+    // Content Blocks
+    async function loadContentBlocks() {
+      try {
+        const response = await fetch(`${API_BASE}/content`);
+        const blocks = await response.json();
+        const container = document.getElementById('contentContainer');
+        
+        if (blocks.length === 0) {
+          container.innerHTML = '<p class="text-gray-500">No content blocks yet</p>';
+          return;
+        }
+        
+        container.innerHTML = blocks.map(block => `
+          <div class="bg-white rounded-lg shadow-md p-4">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <p class="text-sm text-gray-500">Page: <strong>${block.page}</strong></p>
+                <p class="text-gray-700 mt-2 line-clamp-2">${block.text}</p>
+                <p class="text-xs text-gray-400 mt-2">Position: ${block.position}</p>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="editContent('${block.id}')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">
+                  Edit
+                </button>
+                <button onclick="deleteContent('${block.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading content blocks:', error);
+      }
+    }
+
+    document.getElementById('createContentBtn').addEventListener('click', () => {
+      document.getElementById('contentForm').reset();
+      document.getElementById('contentId').value = '';
+      document.getElementById('contentModalTitle').textContent = 'Create Content Block';
+      document.getElementById('contentModal').classList.add('active');
+    });
+
+    document.getElementById('contentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const id = document.getElementById('contentId').value;
+      const contentData = {
+        page: document.getElementById('contentPage').value,
+        text: document.getElementById('contentText').value,
+        imageUrl: document.getElementById('contentImageUrl').value,
+        altText: document.getElementById('contentAltText').value,
+        position: parseInt(document.getElementById('contentPosition').value)
+      };
+
+      try {
+        const url = id ? `${API_BASE}/content/${id}` : `${API_BASE}/content`;
+        const method = id ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(contentData)
+        });
+
+        if (response.ok) {
+          closeContentModal();
+          loadContentBlocks();
+        } else {
+          alert('Error saving content block');
+        }
+      } catch (error) {
+        console.error('Error saving content block:', error);
+        alert('Error saving content block');
+      }
+    });
+
+    async function editContent(id) {
+      try {
+        const response = await fetch(`${API_BASE}/content`);
+        const blocks = await response.json();
+        const block = blocks.find(b => b.id === id);
+        
+        if (!block) throw new Error('Block not found');
+        
+        document.getElementById('contentId').value = block.id;
+        document.getElementById('contentPage').value = block.page;
+        document.getElementById('contentText').value = block.text;
+        document.getElementById('contentImageUrl').value = block.imageUrl || '';
+        document.getElementById('contentAltText').value = block.altText || '';
+        document.getElementById('contentPosition').value = block.position;
+        
+        document.getElementById('contentModalTitle').textContent = 'Edit Content Block';
+        document.getElementById('contentModal').classList.add('active');
+      } catch (error) {
+        console.error('Error loading content block:', error);
+        alert('Error loading content block');
+      }
+    }
+
+    function closeContentModal() {
+      document.getElementById('contentModal').classList.remove('active');
+    }
+
+    async function deleteContent(id) {
+      if (!confirm('Delete this content block?')) return;
+      
+      try {
+        const response = await fetch(`${API_BASE}/content/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+          loadContentBlocks();
+        } else {
+          alert('Error deleting content block');
+        }
+      } catch (error) {
+        console.error('Error deleting content block:', error);
+        alert('Error deleting content block');
+      }
+    }
+
+    // Audit Logs
+    async function loadAuditLogs() {
+      try {
+        const response = await fetch(`${API_BASE}/logs?limit=50`);
+        const logs = await response.json();
+        const container = document.getElementById('logsContainer');
+        
+        if (logs.length === 0) {
+          container.innerHTML = '<p class="text-gray-500">No logs yet</p>';
+          return;
+        }
+        
+        const logHTML = logs.map(log => `
+          <div class="border-b pb-4 mb-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="font-semibold text-gray-800">${log.action}</p>
+                <p class="text-sm text-gray-600">User: ${log.userId}</p>
+                <p class="text-xs text-gray-500">${new Date(log.timestamp).toLocaleString()}</p>
+              </div>
+            </div>
+            ${log.details ? `<pre class="bg-gray-100 p-2 mt-2 text-xs rounded overflow-auto max-h-32">${JSON.stringify(log.details, null, 2)}</pre>` : ''}
+          </div>
+        `).join('');
+        
+        container.innerHTML = logHTML;
+      } catch (error) {
+        console.error('Error loading audit logs:', error);
+      }
+    }
+
+    // Close modals when clicking outside
+    window.addEventListener('click', (e) => {
+      if (e.target.id === 'eventModal') closeEventModal();
+      if (e.target.id === 'contentModal') closeContentModal();
+    });
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+      loadEvents();
+    });
+  </script>
+</body>
+</html>
