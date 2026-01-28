@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SociaalAI - Event Management</title>
+  <title>SociaalAI - Denk, Doe en Leer Mee</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @supports (font-variation-settings: normal) {
@@ -14,7 +14,7 @@
     .banner {
       position: relative;
       overflow: hidden;
-      height: 400px;
+      min-height: 500px;
       background-size: cover;
       background-position: center;
       display: flex;
@@ -25,11 +25,13 @@
       text-align: center;
       color: white;
       z-index: 5;
+      max-width: 800px;
+      padding: 2rem;
     }
     .banner-overlay {
       position: absolute;
       inset: 0;
-      background-color: rgba(0,0,0,0.3);
+      background: linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 100%);
       z-index: 2;
     }
     img {
@@ -38,12 +40,12 @@
     }
     /* Accessibility improvements */
     focus:visible {
-      outline: 2px solid #3b82f6;
+      outline: 2px solid #2563eb;
       outline-offset: 2px;
     }
     a:focus-visible,
     button:focus-visible {
-      outline: 2px solid #3b82f6;
+      outline: 2px solid #2563eb;
       outline-offset: 2px;
     }
     /* Lazy loading placeholder */
@@ -56,55 +58,110 @@
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
+    .three-pillar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+    .pillar-card {
+      text-align: center;
+      padding: 2rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .pillar-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+    .pillar-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    .tagline {
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 2rem 0;
+      text-align: center;
+    }
   </style>
   <link rel="preload" as="image" href="/Gemini_Generated_Image_jdi0gcjdi0gcjdi0.png">
 </head>
-<body class="bg-gray-50">
+<body class="bg-white">
   <!-- Navigation -->
-  <nav class="bg-white shadow-md sticky top-0 z-50">
+  <nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
     <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-blue-600">SociaalAI</h1>
+      <div class="flex items-center gap-8">
+        <h1 class="text-2xl font-bold text-blue-600">SociaalAI</h1>
+        <div class="hidden md:flex gap-6">
+          <a href="/" class="text-gray-700 hover:text-blue-600 transition font-medium">Thuis</a>
+          <a href="/archive" class="text-gray-700 hover:text-blue-600 transition font-medium">Archief</a>
+          <a href="#agenda" class="text-gray-700 hover:text-blue-600 transition font-medium">Agenda</a>
+        </div>
+      </div>
       <div class="flex gap-4 items-center">
-        <a href="/" class="text-gray-700 hover:text-blue-600 transition">Events</a>
-        <a href="/archive" class="text-gray-700 hover:text-blue-600 transition">Archive</a>
-        <a href="/login" id="loginBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-          Admin Login
+        <a href="/login" id="loginBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium">
+          Admin Inloggen
         </a>
-        <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition hidden">
-          Logout
+        <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-medium hidden">
+          Uitloggen
         </button>
       </div>
     </div>
   </nav>
 
   <!-- Hero Banner -->
-  <div class="banner" id="banner" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/Gemini_Generated_Image_jdi0gcjdi0gcjdi0.png'); background-position: center;" role="region" aria-label="Event banner">
+  <div class="banner" id="banner" style="background-image: linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 100%), url('/Gemini_Generated_Image_jdi0gcjdi0gcjdi0.png'); background-position: center;" role="region" aria-label="Event banner">
     <div class="banner-content">
-      <h2 class="text-4xl font-bold mb-4">Welcome to SociaalAI</h2>
-      <p class="text-xl">Discover amazing events</p>
+      <h2 class="text-5xl font-bold mb-4" data-id="banner-title"></h2>
+      <p class="text-2xl font-light mb-6" data-id="banner-subtitle"></p>
+      <p class="text-lg" data-id="tagline"></p>
     </div>
   </div>
 
-  <!-- Content Container -->
-  <div class="container mx-auto px-4 py-8">
-    <!-- Content Blocks -->
-    <div id="contentBlocks" class="mb-12"></div>
+  <!-- Main Content -->
+  <div class="container mx-auto px-4 py-12">
+    <!-- Three Pillars Section -->
+    <div class="py-12">
+      <h2 class="tagline" data-id="tagline"></h2>
+      <div class="three-pillar">
+        <div class="pillar-card">
+          <div class="pillar-icon">🤔</div>
+          <h3 class="text-xl font-bold text-gray-800 mb-3">Meedenken</h3>
+          <p class="text-gray-600" data-id="pillar-1-desc"></p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-icon">📚</div>
+          <h3 class="text-xl font-bold text-gray-800 mb-3">Samen Leren</h3>
+          <p class="text-gray-600" data-id="pillar-2-desc"></p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-icon">🚀</div>
+          <h3 class="text-xl font-bold text-gray-800 mb-3">Meedoen</h3>
+          <p class="text-gray-600" data-id="pillar-3-desc"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- About Section -->
+    <div class="bg-gray-50 rounded-lg p-8 my-12">
+      <h2 class="text-3xl font-bold text-gray-800 mb-4">Over SociaalAI</h2>
+      <p class="text-gray-700 leading-relaxed mb-4" data-id="about-desc1"></p>
+      <p class="text-gray-700 leading-relaxed" data-id="about-desc2"></p>
+    </div>
 
     <!-- Events Grid -->
-    <section aria-labelledby="eventsHeading">
-      <h2 id="eventsHeading" class="text-3xl font-bold mb-8 text-gray-800">Upcoming Events</h2>
+    <section aria-labelledby="eventsHeading" id="agenda">
+      <h2 id="eventsHeading" class="text-3xl font-bold mb-8 text-gray-800 mt-12">Agenda</h2>
       <div id="eventsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="text-center py-8 text-gray-500">Loading events...</div>
+        <div class="text-center py-8 text-gray-500">Laden van evenementen...</div>
       </div>
     </section>
-  </div>
 
-  <!-- Footer -->
-  <footer class="bg-gray-800 text-white mt-12 py-8">
-    <div class="container mx-auto px-4 text-center">
-      <p>&copy; 2024 SociaalAI Event Management. All rights reserved.</p>
-    </div>
-  </footer>
+    <!-- Content Blocks -->
+    <div id="contentBlocks" class="mb-12 mt-12"></div>
 
   <script>
     // Load Events
@@ -120,16 +177,19 @@
         }
 
         container.innerHTML = events.map(event => `
-          <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+          <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition border border-gray-200">
             ${event.imageUrl ? `
               <img src="${event.imageUrl}" alt="${event.title}" 
                    class="w-full h-48 object-cover" loading="lazy" decoding="async">
             ` : ''}
             <div class="p-4">
-              <h3 class="text-xl font-bold text-gray-800 mb-2">${event.title}</h3>
-              <p class="text-gray-600 mb-2">${event.description || ''}</p>
-              <p class="text-sm text-gray-500 mb-1">📅 ${new Date(event.date).toLocaleDateString()}</p>
-              ${event.location ? `<p class="text-sm text-gray-500">📍 ${event.location}</p>` : ''}
+              <h3 class="text-lg font-bold text-gray-800 mb-2">${event.title}</h3>
+              <p class="text-gray-600 mb-3 text-sm">${event.description || ''}</p>
+              <div class="space-y-1 text-sm text-gray-500">
+                <p>📅 <strong>${new Date(event.date).toLocaleDateString('nl-NL', { year: 'numeric', month: 'long', day: 'numeric' })}</strong></p>
+                ${event.location ? `<p>📍 ${event.location}</p>` : ''}
+                ${event.time ? `<p>🕐 ${event.time}</p>` : ''}
+              </div>
             </div>
           </div>
         `).join('');
@@ -149,22 +209,133 @@
 
         container.innerHTML = blocks
           .sort((a, b) => a.position - b.position)
-          .map(block => `
-            <div class="bg-white rounded-lg shadow-md p-6 mb-6 flex gap-6 items-center">
-              ${block.imageUrl ? `
-                <img src="${block.imageUrl}" alt="${block.altText || block.text}" 
-                     class="w-48 h-48 object-cover rounded" loading="lazy" decoding="async">
-              ` : ''}
-              <div class="flex-1">
-                ${block.text}
+          .map((block, index) => `
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden editable-block" data-block-id="${block.id}" data-block-index="${index}">
+              <div class="flex flex-col md:flex-row gap-6 items-center p-6 edit-hover">
+                ${block.imageUrl ? `
+                  <img src="${block.imageUrl}" alt="${block.altText || block.text}" 
+                       class="w-full md:w-48 h-48 object-cover rounded-lg flex-shrink-0" loading="lazy" decoding="async">
+                ` : ''}
+                <div class="flex-1 content-text">
+                  ${block.text}
+                </div>
               </div>
             </div>
           `).join('');
+
+        // Add click listeners for editing if authenticated
+        if (window.isAuthenticated) {
+          document.querySelectorAll('.editable-block').forEach(block => {
+            block.addEventListener('click', () => enableEditMode(block));
+          });
+        }
       } catch (error) {
         console.error('Error loading content blocks:', error);
       }
     }
 
+    // Enable edit mode for a content block
+    function enableEditMode(blockElement) {
+      if (blockElement.classList.contains('edit-mode')) return;
+
+      const contentText = blockElement.querySelector('.content-text');
+      const originalText = contentText.innerHTML;
+      const blockId = blockElement.dataset.blockId;
+
+      blockElement.classList.add('edit-mode');
+
+      contentText.innerHTML = `
+        <div class="edit-toolbar">
+          <button class="save-btn">Opslaan</button>
+          <button class="cancel-btn cancel">Annuleren</button>
+        </div>
+        <textarea class="content-editor">${originalText}</textarea>
+      `;
+
+      const textarea = contentText.querySelector('textarea');
+      const saveBtn = contentText.querySelector('.save-btn');
+      const cancelBtn = contentText.querySelector('.cancel-btn');
+
+      textarea.focus();
+      textarea.select();
+
+      saveBtn.addEventListener('click', async () => {
+        const newText = textarea.value;
+        try {
+          const response = await fetch(`/api/content/${blockId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: newText })
+          });
+          if (response.ok) {
+            contentText.innerHTML = newText;
+            blockElement.classList.remove('edit-mode');
+          } else {
+            alert('Fout bij opslaan');
+          }
+        } catch (error) {
+          console.error('Error saving content:', error);
+          alert('Fout bij opslaan');
+        }
+      });
+
+      cancelBtn.addEventListener('click', () => {
+        contentText.innerHTML = originalText;
+        blockElement.classList.remove('edit-mode');
+      });
+    }
+
+    // Enable edit mode for static text elements
+    function enableStaticTextEditMode(element) {
+      if (element.classList.contains('edit-mode')) return;
+
+      const editableId = element.dataset.editable;
+      const originalHTML = element.innerHTML;
+
+      element.classList.add('edit-mode');
+
+      element.innerHTML = `
+        <div class="edit-toolbar">
+          <button class="save-btn">Opslaan</button>
+          <button class="cancel-btn cancel">Annuleren</button>
+        </div>
+        <textarea class="content-editor" style="width: 100%; min-height: 150px;">${element.innerText}</textarea>
+      `;
+
+      const textarea = element.querySelector('textarea');
+      const saveBtn = element.querySelector('.save-btn');
+      const cancelBtn = element.querySelector('.cancel-btn');
+
+      textarea.focus();
+      textarea.select();
+
+      saveBtn.addEventListener('click', async () => {
+        const newText = textarea.value;
+        try {
+          const response = await fetch(`/api/static/${editableId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: newText })
+          });
+          if (response.ok) {
+            element.innerHTML = newText;
+            element.classList.remove('edit-mode');
+          } else {
+            alert('Fout bij opslaan');
+          }
+        } catch (error) {
+          console.error('Error saving static text:', error);
+          alert('Fout bij opslaan');
+        }
+      });
+
+      cancelBtn.addEventListener('click', () => {
+        element.innerHTML = originalHTML;
+        element.classList.remove('edit-mode');
+      });
+    }
+
+    // Load static page content from cached data
     // Auth Check
     async function checkAuth() {
       try {
@@ -173,6 +344,8 @@
         
         const loginBtn = document.getElementById('loginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
+        
+        window.isAuthenticated = data.authenticated;
         
         if (data.authenticated) {
           loginBtn.classList.add('hidden');
@@ -183,8 +356,9 @@
         }
       } catch (error) {
         console.error('Error checking auth:', error);
+        window.isAuthenticated = false;
       }
-    }
+    
 
     // Logout
     document.getElementById('logoutBtn')?.addEventListener('click', async () => {
@@ -201,12 +375,23 @@
       loadEvents();
       loadContentBlocks();
       checkAuth();
+
+      // Smooth scroll for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
+      });
     });
 
     // Keyboard navigation for accessibility
     document.addEventListener('keydown', (e) => {
       // Keyboard navigation handled elsewhere if needed
-    });
+    });}
   </script>
 </body>
-</html>
+</html>   

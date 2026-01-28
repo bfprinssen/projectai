@@ -65,6 +65,9 @@
       <button class="tab-btn px-6 py-3 border-b-2 border-transparent font-semibold text-gray-600 hover:text-gray-900" data-tab="content">
         Content Blocks
       </button>
+      <button class="tab-btn px-6 py-3 border-b-2 border-transparent font-semibold text-gray-600 hover:text-gray-900" data-tab="pages">
+        Page Content
+      </button>
       <button class="tab-btn px-6 py-3 border-b-2 border-transparent font-semibold text-gray-600 hover:text-gray-900" data-tab="logs">
         Audit Logs
       </button>
@@ -96,6 +99,76 @@
     <div id="logs" class="tab space-y-6">
       <h2 class="text-2xl font-bold text-gray-800">Audit Logs</h2>
       <div id="logsContainer" class="bg-white rounded-lg shadow-md p-6"></div>
+    </div>
+
+    <!-- Page Content Tab -->
+    <div id="pages" class="tab space-y-6">
+      <h2 class="text-2xl font-bold text-gray-800">Edit Page Content</h2>
+      <div class="space-y-4">
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h3 class="text-lg font-bold mb-3">Hero Banner - Title</h3>
+          <textarea id="banner-title" class="w-full px-3 py-2 border rounded" rows="2">Welkom bij SociaalAI</textarea>
+          <button class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" data-save="banner-title">
+            Opslaan
+          </button>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h3 class="text-lg font-bold mb-3">Hero Banner - Subtitle</h3>
+          <textarea id="banner-subtitle" class="w-full px-3 py-2 border rounded" rows="2">Denk, Doe en Leer Mee</textarea>
+          <button class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" data-save="banner-subtitle">
+            Opslaan
+          </button>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h3 class="text-lg font-bold mb-3">Main Tagline</h3>
+          <textarea id="tagline" class="w-full px-3 py-2 border rounded" rows="2">Samen maken we technologie sociaal</textarea>
+          <button class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" data-save="tagline">
+            Opslaan
+          </button>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h3 class="text-lg font-bold mb-3">Meedenken - Description</h3>
+          <textarea id="pillar-1-desc" class="w-full px-3 py-2 border rounded" rows="3">Jij krijgt een stem bij het ontwikkelen en beoordelen van AI. Jouw mening telt.</textarea>
+          <button class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" data-save="pillar-1-desc">
+            Opslaan
+          </button>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h3 class="text-lg font-bold mb-3">Samen Leren - Description</h3>
+          <textarea id="pillar-2-desc" class="w-full px-3 py-2 border rounded" rows="3">We vergroten de kennis over kansen en risico's van kunstmatige intelligentie.</textarea>
+          <button class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" data-save="pillar-2-desc">
+            Opslaan
+          </button>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h3 class="text-lg font-bold mb-3">Meedoen - Description</h3>
+          <textarea id="pillar-3-desc" class="w-full px-3 py-2 border rounded" rows="3">We ontwikkelen samen oplossingen die passen bij de waarden van de stad.</textarea>
+          <button class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" data-save="pillar-3-desc">
+            Opslaan
+          </button>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h3 class="text-lg font-bold mb-3">About Section - Description 1</h3>
+          <textarea id="about-desc1" class="w-full px-3 py-2 border rounded" rows="3">We onderzoeken samen wat kunstmatige intelligentie (AI) betekent voor het dagelijks leven, en hoe we AI zo kunnen gebruiken dat het bijdraagt aan gelijke kansen voor iedereen.</textarea>
+          <button class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" data-save="about-desc1">
+            Opslaan
+          </button>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h3 class="text-lg font-bold mb-3">About Section - Description 2</h3>
+          <textarea id="about-desc2" class="w-full px-3 py-2 border rounded" rows="4">Kunstmatige Intelligentie? Technologie is pas echt slim als ze óók sociaal is. Daarom brengen we bewoners, onderzoekers, ontwerpers en beleidsmakers samen in een open plek waar we aan eerlijke, begrijpelijke en toegankelijke technologie werken.</textarea>
+          <button class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" data-save="about-desc2">
+            Opslaan
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -533,6 +606,66 @@
     window.addEventListener('click', (e) => {
       if (e.target.id === 'eventModal') closeEventModal();
       if (e.target.id === 'contentModal') closeContentModal();
+    });
+
+    // Save Page Content (static texts)
+    document.querySelectorAll('button[data-save]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-save');
+        const textarea = document.getElementById(id);
+        const text = textarea.value;
+
+        try {
+          const response = await fetch(`/api/static/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+          });
+
+          if (response.ok) {
+            btn.textContent = '✓ Opgeslagen';
+            btn.classList.add('bg-green-600');
+            btn.classList.remove('bg-blue-600');
+            setTimeout(() => {
+              btn.textContent = 'Opslaan';
+              btn.classList.remove('bg-green-600');
+              btn.classList.add('bg-blue-600');
+            }, 2000);
+          } else {
+            alert('Fout bij opslaan');
+          }
+        } catch (error) {
+          console.error('Error saving page content:', error);
+          alert('Fout bij opslaan');
+        }
+      });
+    });
+
+    // Load Page Content when tab is opened
+    async function loadPageContent() {
+      const contentIds = ['banner-title', 'banner-subtitle', 'tagline', 'pillar-1-desc', 'pillar-2-desc', 'pillar-3-desc', 'about-desc1', 'about-desc2'];
+      
+      for (const id of contentIds) {
+        try {
+          const response = await fetch(`/api/static/${id}`);
+          const data = await response.json();
+          const textarea = document.getElementById(id);
+          if (textarea && data.text) {
+            textarea.value = data.text;
+          }
+        } catch (error) {
+          console.error(`Error loading ${id}:`, error);
+        }
+      }
+    }
+
+    // Hook into tab switching to load page content
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.getAttribute('data-tab') === 'pages') {
+          loadPageContent();
+        }
+      });
     });
 
     // Initialize
